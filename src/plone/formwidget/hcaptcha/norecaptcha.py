@@ -34,7 +34,7 @@ def displayhtml(
     site_key, language="", theme="light", fallback=False, d_type="image", size="normal"
 ):
     """
-    Gets the HTML to display for reCAPTCHA
+    Gets the HTML to display for hCAPTCHA
 
     site_key -- The site key
     language -- The language code for the widget.
@@ -44,7 +44,7 @@ def displayhtml(
     size -- The size of the dispalyed CAPTCHA, 'normal' or 'compact'
 
     For more detail, refer to:
-      - https://developers.google.com/recaptcha/docs/display
+      - https://docs.hcaptcha.com/
     """
 
     return """
@@ -70,16 +70,16 @@ def displayhtml(
 
 def submit(recaptcha_response_field, secret_key, remoteip, verify_server=VERIFY_SERVER):
     """
-    Submits a reCAPTCHA request for verification. Returns RecaptchaResponse
+    Submits a hCAPTCHA request for verification. Returns HcaptchaResponse
     for the request
 
-    recaptcha_response_field -- The value from the form
-    secret_key -- your reCAPTCHA secret key
+    hcaptcha_response_field -- The value from the form
+    secret_key -- your hCAPTCHA secret key
     remoteip -- the user's ip address
     """
 
-    if not (recaptcha_response_field and len(recaptcha_response_field)):
-        return RecaptchaResponse(is_valid=False, error_code="incorrect-captcha-sol")
+    if not (hcaptcha_response_field and len(hcaptcha_response_field)):
+        return HcaptchaResponse(is_valid=False, error_code="incorrect-captcha-sol")
 
     def encode_if_necessary(s):
         if isinstance(s, six.text_type):
@@ -89,22 +89,22 @@ def submit(recaptcha_response_field, secret_key, remoteip, verify_server=VERIFY_
     if six.PY2:
         secret_key = encode_if_necessary(secret_key)
         remoteip = encode_if_necessary(remoteip)
-        recaptcha_response_field = encode_if_necessary(recaptcha_response_field)
+        hcaptcha_response_field = encode_if_necessary(hcaptcha_response_field)
 
     params = parse.urlencode(
         {
             "secret": secret_key,
             "remoteip": remoteip,
-            "response": recaptcha_response_field,
+            "response": hcaptcha_response_field,
         }
     )
 
     request = Request(
-        url="https://{0}/recaptcha/api/siteverify".format(verify_server),
+        url="https://hcaptcha.com/siteverify".format(verify_server),
         data=params,
         headers={
             "Content-type": "application/x-www-form-urlencoded",
-            "User-agent": "noReCAPTCHA Python",
+            "User-agent": "noHCAPTCHA Python",
         },
     )
 
