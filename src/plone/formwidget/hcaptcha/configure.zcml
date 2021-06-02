@@ -3,6 +3,8 @@
     xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
     xmlns:i18n="http://namespaces.zope.org/i18n"
     xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:z3c="http://namespaces.zope.org/z3c"
     i18n_domain="plone.formwidget.hcaptcha">
 
   <i18n:registerTranslations directory="locales" />
@@ -17,12 +19,32 @@
 
   <include file="permissions.zcml" />
 
+  <include package="plone.z3cform" />
+  <include package="plone.app.registry" />
+  <include package="plone.supermodel" />
+
+  <include package=".demo" />
+
+
+  <utility
+      name="plone.formwidget.hcaptcha.HCaptchaWidget"
+      component=".supermodel.CaptchaHandler"
+      />
+
+  <adapter
+      for="plone.formwidget.hcaptcha.supermodel.ICaptchaField
+           z3c.form.interfaces.IFormLayer"
+      factory=".widget.HCaptchaFieldWidget"
+      />
+
+
   <genericsetup:registerProfile
       name="default"
-      title="plone.formwidget.hcaptcha"
+      title="HCaptcha widget"
       directory="profiles/default"
-      description="Installs the plone.formwidget.hcaptcha add-on."
+      description="z3c.form ReCaptcha widget."
       provides="Products.GenericSetup.interfaces.EXTENSION"
+      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
       post_handler=".setuphandlers.post_install"
       />
 
@@ -41,5 +63,57 @@
       />
 
   <!-- -*- extra stuff goes here -*- -->
+
+
+  <!-- Control panel -->
+
+  <browser:page
+      name="hcaptcha-settings"
+      for="zope.component.interfaces.ISite"
+      permission="cmf.ManagePortal"
+      class=".controlpanel.HCaptchaSettingsControlPanel"
+
+      />
+
+
+  <adapter factory=".view.HcaptchaInfo" />
+
+  <browser:view
+      name="hcaptcha"
+      for="*"
+      permission="zope2.Public"
+      class=".view.HcaptchaView"
+      layer=".interfaces.IHCaptchaLayer"
+      />
+
+
+  <!-- make security assertions for use from restricted Python -->
+  <class class="plone.formwidget.hcaptcha.view.HcaptchaView">
+    <allow
+        attributes="image_tag audio_url verify external"
+        />
+  </class>
+
+  <!-- ReCaptcha widget -->
+  <class class=".widget.HCaptchaWidget">
+    <require
+        permission="zope.Public"
+        interface="plone.formwidget.hcaptcha.interfaces.IHCaptchaWidget"
+        />
+  </class>
+
+  <z3c:widgetTemplate
+      template="widget_display.pt"
+      layer="z3c.form.interfaces.IFormLayer"
+      mode="display"
+      widget="plone.formwidget.hcaptcha.interfaces.IHCaptchaWidget"
+      />
+
+  <z3c:widgetTemplate
+      template="widget.pt"
+      layer="z3c.form.interfaces.IFormLayer"
+      mode="input"
+      widget="plone.formwidget.hcaptcha.interfaces.IHCaptchaWidget"
+      />
 
 </configure>
